@@ -1,0 +1,36 @@
+name: Build LaTeX Document
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up LaTeX environment
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: "Book_SSW590_1/itManual.tex"
+
+      - name: Add changelist number to version
+        run: |
+          HASH=$(git rev-parse --short HEAD)
+          echo "Commit Hash: $HASH"
+          sed -i "s/Version:.*/Version: v1.0-$HASH/" "Book_SSW590_1/itManual.tex" || true
+
+      - name: Compile PDF
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: "Book_SSW590_1/itManual.tex"
+
+      - name: Upload compiled PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-pdf
+          path: "Book_SSW590_1/itManual.pdf"
