@@ -41,64 +41,63 @@ The next step was to automate the build and versioning process. We implemented a
 \begin{enumerate}
     \item \textbf{Create a GitHub Workflow File}
     \begin{itemize}
-        \item Inside the repository, we created a directory named \texttt{.github/insertnamehere} and added a YAML file (e.g., \texttt{latex-build.yml}) to define the automation steps.
+        \item Inside the repository, we created a directory named \texttt{.github/workflows} and added a YAML file (e.g., \texttt{latex-build.yml}) to define the automation steps.
         \item The workflow is triggered on every push event to the main branch:
         \begin{minted}{yaml}
-        name: Build LaTeX Document
+       name: Build LaTeX Document
 
-        on:
-          push:
-            branches: [ "main" ]
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
-        jobs:
-          build:
-            runs-on: ubuntu-latest
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-            steps:
-              - name: Checkout repository
-                uses: actions/checkout@v3
+      - name: Set up LaTeX environment
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: "Book_SSW590_1/itManual.tex"
 
-              - name: Set up LaTeX
-                uses: xu-cheng/latex-action@v3
-                with:
-                  root_file: main.tex
+      - name: Add changelist number to version
+        run: |
+          HASH=$(git rev-parse --short HEAD)
+          echo "Commit Hash: $HASH"
+          sed -i "s/Version:.*/Version: v1.0-$HASH/" "Book_SSW590_1/itManual.tex" || true
 
-              - name: Add changelist number
-                run: |
-                  echo "Changelist: ${{ github.run_number }}" >> version.txt
+      - name: Compile PDF
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: "Book_SSW590_1/itManual.tex"
 
-              - name: Commit version update
-                run: |
-                  git config user.name "github-actions"
-                  git config user.email "github-actions@github.com"
-                  git add version.txt
-                  git commit -m "Updated changelist version"
-                  git push
-              
-              - name: Upload compiled PDF
-                uses: actions/upload-artifact@v4
-                with:
-                  name: project-pdf
-                  path: main.pdf
+      - name: Upload compiled PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-pdf
+          path: "Book_SSW590_1/itManual.pdf"
         \end{minted}
         \item This file defines all steps necessary for compiling the LaTeX document and storing its version.
     \end{itemize}
 
     \item \textbf{Add Version Tagging to LaTeX Document}
     \begin{itemize}
-        \item To dynamically reflect version numbers, we included a small section in our LaTeX preamble to read from the \texttt{version.txt} file.
+        \item To dynamically reflect version numbers, we included a small section in our LaTeX preamble to read from the \texttt{itManual.txt} file.
         \begin{minted}{latex}
-        \newcommand{\version}{\input{version.txt}}
+        \newcommand{\version}{\input{itManual.txt}}
         \fancyfoot[R]{Version \version}
         \end{minted}
-        \item Each time the GitHub Action runs, the \texttt{version.txt} file is updated with the latest changelist number, and the PDF footer displays this automatically.
+        \item Each time the GitHub Action runs, the \texttt{itManual.txt} file is updated with the latest changelist number, and the PDF footer displays this automatically.
     \end{itemize}
 
     \item \textbf{Compile and Store PDF}
     \begin{itemize}
         \item When the workflow runs, GitHub uses a cloud-hosted runner to compile the document using the \texttt{latexmk} engine.
-        \item After successful compilation, the PDF is saved as an artifact named \texttt{project-pdf}, which can be downloaded directly from the workflow summary page.
-        \item Optionally, the compiled PDF can also be pushed back to the repository or zipped into a separate version for archival.
+        \item After successful compilation, the PDF is saved as an artifact named \texttt{Book\_SSW590\_1}, which can be downloaded directly from the workflow summary page.
     \end{itemize}
 \end{enumerate}
 
@@ -106,6 +105,13 @@ The next step was to automate the build and versioning process. We implemented a
 
 The GitHub Action successfully automated the LaTeX compilation process. Each new commit to the repository generated a unique version of the document with an incremented changelist number, ensuring traceability between Overleaf edits and GitHub updates. The workflow eliminated the need for manual PDF generation, improving consistency and version management for our project. 
 
+Here is the link to the GitHub repository: \url{https://github.com/natalyjc/devops.git}
 
-\textbf{If there are any screenshots they can be inserted here: }
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Book_SSW590_1/png/GitHubActionSS.png}
+    \caption{Our Overleaf View Showing GitHub}
+    \label{Our Overleaf View Showing GitHub}
+\end{figure}
+
 

@@ -206,7 +206,9 @@ urlcolor=blue
 \newtheorem{userStory}{User Story}
 
 % command for adding a version to the document
-\newcommand{\VERSION}{Version 0.0.0}
+\newcommand{\version}{\input{version.txt}}
+\fancyfoot[R]{Version \version}
+
 
 % Family -- enter the name of the family that it belongs to: Chapter, Figure, Table, etc.
 % Name -- name of the family member: file name, table name, etc.

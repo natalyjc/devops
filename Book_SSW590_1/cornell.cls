@@ -56,6 +56,8 @@
 %%   Grave accent  \`     Left brace    \{     Vertical bar  \|
 %%   Right brace   \}     Tilde         \~}
 %%
+\RequirePackage[colorlinks=true, linkcolor=blue, urlcolor=blue]{hyperref}
+
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesClass{cornell}
 [1998/03/26 v2.0
