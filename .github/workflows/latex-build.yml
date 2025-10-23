@@ -9,28 +9,28 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    # Step 1: Checkout repo
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Set up LaTeX environment
-        uses: xu-cheng/latex-action@v3
-        with:
-          root_file: "Book_SSW590_1/itManual.tex"
+    # Step 2: Add version number from last git commit
+    - name: Add version number
+      run: |
+        HASH=$(git rev-parse --short HEAD)
+        echo "v1.0-$HASH" > Book_SSW590_1/version.txt
 
-      - name: Add changelist number to version
-        run: |
-          HASH=$(git rev-parse --short HEAD)
-          echo "Commit Hash: $HASH"
-          sed -i "s/Version:.*/Version: v1.0-$HASH/" "Book_SSW590_1/itManual.tex" || true
+    # Step 3: Compile LaTeX
+    - name: Compile PDF
+      uses: xu-cheng/latex-action@v3
+      with:
+        root_file: itManual.tex
+        working_directory: Book_SSW590_1
 
-      - name: Compile PDF
-        uses: xu-cheng/latex-action@v3
-        with:
-          root_file: "Book_SSW590_1/itManual.tex"
-
-      - name: Upload compiled PDF
-        uses: actions/upload-artifact@v4
-        with:
-          name: compiled-pdf
-          path: "Book_SSW590_1/itManual.pdf"
+    # Step 4: Upload compiled PDF
+    - name: Upload compiled PDF
+      uses: actions/upload-artifact@v4
+      with:
+        name: compiled-pdf
+        path: Book_SSW590_1/itManual.pdf
