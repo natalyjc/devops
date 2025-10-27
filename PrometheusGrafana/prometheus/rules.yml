@@ -1,0 +1,10 @@
+groups:
+  - name: example
+    rules:
+      - alert: HighCPUUsage
+        expr: node_cpu_seconds_total > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU usage alert"
