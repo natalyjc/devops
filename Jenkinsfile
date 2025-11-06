@@ -1,18 +1,17 @@
 pipeline {
-    agent {
-        docker { image 'python:3.10' }
-    }
+    agent any
 
     stages {
-        stage('Install dependencies') {
+        stage('Setup Virtual Env') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh 'python3 -m venv venv'
+                sh './venv/bin/pip install -r requirements.txt'
             }
         }
 
-        stage('Run tests') {
+        stage('Run Tests') {
             steps {
-                sh 'pytest --junitxml=report.xml'
+                sh './venv/bin/pytest --junitxml=report.xml'
             }
         }
 
