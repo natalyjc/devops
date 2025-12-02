@@ -37,15 +37,15 @@ jobs:
         CHAPTER_LABEL=$(echo "$CHAPTER_NAME" | sed 's/^it//')
         
         # Create the new .tex file
-        cat > "Book_SSW590_1/${CHAPTER_NAME}.tex" << 'EOF'
-        \chapter{${CHAPTER_TITLE}\\
-        \small{\textit{-- ${AUTHORS}}}}
-        \index{Project} 
-        \index{Chapter!${CHAPTER_LABEL}}
-        \label{Chapter::${CHAPTER_LABEL}}
-        
-        % Add your chapter content here
-        EOF
+        cat > "Book_SSW590_1/${CHAPTER_NAME}.tex" << EOF
+\\chapter{${CHAPTER_TITLE}\\\\
+\\small{\\textit{-- ${AUTHORS}}}}
+\\index{Project} 
+\\index{Chapter!${CHAPTER_LABEL}}
+\\label{Chapter::${CHAPTER_LABEL}}
+
+% Add your chapter content here
+EOF
       shell: bash
 
     # Step 3: Update itManual.tex includeonly section
@@ -127,3 +127,11 @@ jobs:
       with:
         name: compiled-pdf
         path: Book_SSW590_1/itManual.pdf
+
+    # Step 8: Notify on failure
+    - name: Notify build failure
+      if: failure()
+      run: |
+        echo "⚠️ LaTeX build failed!"
+        echo "Check the logs above for details."
+        exit 1

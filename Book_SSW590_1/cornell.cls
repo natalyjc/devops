@@ -56,8 +56,6 @@
 %%   Grave accent  \`     Left brace    \{     Vertical bar  \|
 %%   Right brace   \}     Tilde         \~}
 %%
-\RequirePackage[colorlinks=true, linkcolor=blue, urlcolor=blue]{hyperref}
-
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesClass{cornell}
 [1998/03/26 v2.0
@@ -86,6 +84,7 @@
 \ProcessOptions
 
 \LoadClass[12pt]{report}[1994/06/01]
+\RequirePackage[colorlinks=true, linkcolor=blue, urlcolor=blue]{hyperref}
 \renewcommand{\defaultscriptratio}{.75}
 \renewcommand{\defaultscriptscriptratio}{.6}
 \setlength\headsep{25\p@}
