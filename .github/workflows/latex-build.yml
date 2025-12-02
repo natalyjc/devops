@@ -5,6 +5,16 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      chapter_name:
+        description: 'Chapter filename (without .tex, e.g., itDemo)'
+        required: false
+      chapter_title:
+        description: 'Chapter title with formatting'
+        required: false
+      authors:
+        description: 'Chapter authors'
+        required: false
 
 jobs:
   build:
@@ -15,20 +25,103 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Step 2: Add version number from last git commit
+    # Step 2: Create new chapter if inputs provided
+    - name: Create new chapter
+      if: ${{ github.event.inputs.chapter_name != '' }}
+      run: |
+        CHAPTER_NAME="${{ github.event.inputs.chapter_name }}"
+        CHAPTER_TITLE="${{ github.event.inputs.chapter_title }}"
+        AUTHORS="${{ github.event.inputs.authors }}"
+        
+        # Extract the chapter label from the chapter name (e.g., Demo from itDemo)
+        CHAPTER_LABEL=$(echo "$CHAPTER_NAME" | sed 's/^it//')
+        
+        # Create the new .tex file
+        cat > "Book_SSW590_1/${CHAPTER_NAME}.tex" << 'EOF'
+        \chapter{${CHAPTER_TITLE}\\
+        \small{\textit{-- ${AUTHORS}}}}
+        \index{Project} 
+        \index{Chapter!${CHAPTER_LABEL}}
+        \label{Chapter::${CHAPTER_LABEL}}
+        
+        % Add your chapter content here
+        EOF
+      shell: bash
+
+    # Step 3: Update itManual.tex includeonly section
+    - name: Update includeonly section
+      if: ${{ github.event.inputs.chapter_name != '' }}
+      run: |
+        CHAPTER_NAME="${{ github.event.inputs.chapter_name }}"
+        
+        # Add chapter to includeonly if not already present
+        python3 << 'PYTHON'
+        import re
+        
+        chapter_name = "${{ github.event.inputs.chapter_name }}"
+        file_path = "Book_SSW590_1/itManual.tex"
+        
+        with open(file_path, 'r') as f:
+            content = f.read()
+        
+        # Update includeonly section
+        includeonly_pattern = r'(\\includeonly\{[^}]*)'
+        if chapter_name not in content:
+            content = re.sub(
+                includeonly_pattern,
+                r'\1,\n' + chapter_name,
+                content
+            )
+        
+        with open(file_path, 'w') as f:
+            f.write(content)
+        PYTHON
+      shell: bash
+
+    # Step 4: Update include section
+    - name: Update include section
+      if: ${{ github.event.inputs.chapter_name != '' }}
+      run: |
+        CHAPTER_NAME="${{ github.event.inputs.chapter_name }}"
+        
+        python3 << 'PYTHON'
+        import re
+        
+        chapter_name = "${{ github.event.inputs.chapter_name }}"
+        file_path = "Book_SSW590_1/itManual.tex"
+        
+        with open(file_path, 'r') as f:
+            content = f.read()
+        
+        # Find the location to insert the include statement
+        # Insert before \appendix
+        include_line = f"\\include{{{chapter_name}}}\n"
+        
+        if include_line.strip() not in content:
+            content = content.replace(
+                "\n\\appendix",
+                f"\n\\include{{{chapter_name}}}\n\\appendix"
+            )
+        
+        with open(file_path, 'w') as f:
+            f.write(content)
+        PYTHON
+      shell: bash
+
+    # Step 5: Add version number from last git commit
     - name: Add version number
       run: |
         HASH=$(git rev-parse --short HEAD)
         echo "v1.0-$HASH" > Book_SSW590_1/version.txt
 
-    # Step 3: Compile LaTeX
+    # Step 6: Compile LaTeX
     - name: Compile PDF
       uses: xu-cheng/latex-action@v3
       with:
         root_file: itManual.tex
         working_directory: Book_SSW590_1
 
-    # Step 4: Upload compiled PDF
+    # Step 7: Upload compiled PDF
     - name: Upload compiled PDF
       uses: actions/upload-artifact@v4
       with:
